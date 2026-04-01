@@ -19,10 +19,30 @@ class SmartDocumentHandler(BaseHandler):
     def __init__(self, config: Dict[str, Any]):
         super().__init__(config)
         
-        # VLM配置（阿里云Qwen）
-        self.vlm_api_key = os.getenv('VLM_API_KEY', '<your api key>')
+        # 从环境变量或配置文件读取VLM配置
+        # 优先级：环境变量 > 配置文件 > 默认值
+        self.vlm_api_key = os.getenv('VLM_API_KEY')
         self.vlm_model = os.getenv('VLM_MODEL', 'qwen3.5-397b-a17b')
         self.vlm_base_url = os.getenv('VLM_BASE_URL', 'https://dashscope.aliyuncs.com/compatible-mode/v1')
+        
+        # 如果环境变量没有，尝试从配置文件读取
+        if not self.vlm_api_key:
+            try:
+                from pathlib import Path
+                env_file = Path('.env')
+                if env_file.exists():
+                    with open(env_file, 'r') as f:
+                        for line in f:
+                            if line.startswith('VLM_API_KEY='):
+                                self.vlm_api_key = line.strip().split('=', 1)[1]
+                                break
+            except Exception as e:
+                logger.warning(f"读取配置文件失败: {e}")
+        
+        # 如果还是没有，使用默认值（仅用于开发测试）
+        if not self.vlm_api_key:
+            self.vlm_api_key = 'sk-xxxx'
+            logger.warning("未配置VLM_API_KEY，使用默认值（仅用于开发测试）")
         
         logger.info(f"SmartDocumentHandler initialized with VLM: {self.vlm_model}")
     
@@ -60,7 +80,7 @@ class SmartDocumentHandler(BaseHandler):
             return ParseResult(
                 markdown=enhanced_markdown,
                 images=mineru_result.get('images', []),
-                json_data=model_data,
+                json_data={"pages": model_data} if isinstance(model_data, list) else model_data,
                 metadata=self._get_metadata(
                     file_path,
                     parser="SmartDocument",
@@ -235,31 +255,31 @@ class SmartDocumentHandler(BaseHandler):
         
         Args:
             img_path: 图片路径
-            model_data: MinerU的model.json数据
+            model_data: MinerU的model.json数据（list格式）
             
         Returns:
             是否为表格
         """
-        # 从model_data中查找该图片的分类信息
-        # MinerU会将图片分类为：table, figure, chart等
+        # model_data是一个list，每个元素是一页的信息
+        if not isinstance(model_data, list):
+            return False
         
-        for page_key, page_data in model_data.items():
+        # 遍历每一页
+        for page_data in model_data:
             if not isinstance(page_data, dict):
                 continue
             
-            # 检查layout信息
-            layout = page_data.get('layout', [])
-            for item in layout:
-                category = item.get('category', '')
-                # 如果MinerU识别为table，返回True
-                if category == 'table':
-                    return True
-                # 如果是chart（图表），也当作表格处理
-                if category in ['chart', 'table_chart']:
+            # 检查layout_dets信息
+            layout_dets = page_data.get('layout_dets', [])
+            for item in layout_dets:
+                category_id = item.get('category_id', 0)
+                # category_id说明：
+                # 1: text, 3: title, 5: figure, 7: table, 9: formula
+                # 如果是table (7)，返回True
+                if category_id == 7:
                     return True
         
         # 如果model_data中没有明确分类，使用启发式方法
-        # 根据图片文件名或路径判断
         if 'table' in img_path.lower() or 'chart' in img_path.lower():
             return True
         

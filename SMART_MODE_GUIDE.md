@@ -167,7 +167,7 @@ DEEPSEEK_API_KEY=your_api_key
 
 ## 四种模式对比
 
-| 特性 | traditional | vlm | selective | smart |
+| 特性 | traditional | vlm | smart |
 |------|------------|-----|-----------|-------|
 | 版面分析 | ❌ | ❌ | ✅ | ✅ |
 | 类型识别 | ❌ | ❌ | ✅ | ✅ |
@@ -205,10 +205,9 @@ DEEPSEEK_API_KEY=your_api_key
 
 ## 常见问题
 
-### Q1: smart模式和selective模式有什么区别？
+### Q1: smart模式有什么特点？
 
 **A:**
-- **selective**：只做简单的类型判断，图片统一用VLM
 - **smart**：完整的版面分析，图片会判断是否为表格，保留层次结构
 
 ### Q2: 需要配置VLM吗？
@@ -253,8 +252,8 @@ mode = "traditional"
 # 复杂文档 → smart
 mode = "smart"
 
-# 只需要图片识别 → selective
-mode = "selective"
+# 复杂文档 → smart
+mode = "smart"
 ```
 
 ### 2. 配置VLM提升图片识别质量

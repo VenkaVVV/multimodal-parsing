@@ -135,7 +135,7 @@ result = ds.apply(some_pipe_function)
 ```bash
 curl -X POST "http://localhost:8000/api/v1/parse" \
   -F "file=@sample.pdf" \
-  -F "mode=selective"
+  -F "mode=smart"
 ```
 
 ## 总结

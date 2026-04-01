@@ -3,7 +3,7 @@
 ## 已配置的VLM信息
 
 **阿里云Qwen模型：**
-- API Key: `<your api key>`
+- API Key: `sk-xxxx`
 - Model: `qwen3.5-397b-a17b`
 - Base URL: `https://dashscope.aliyuncs.com/compatible-mode/v1`
 
@@ -15,7 +15,7 @@
 
 ```bash
 # VLM配置
-VLM_API_KEY=<your api key>
+VLM_API_KEY=sk-xxxx
 VLM_MODEL=qwen3.5-397b-a17b
 VLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
 ```
@@ -25,7 +25,7 @@ VLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
 已在`SmartDocumentHandler`中配置默认值：
 
 ```python
-self.vlm_api_key = os.getenv('VLM_API_KEY', '<your api key>')
+self.vlm_api_key = os.getenv('VLM_API_KEY', 'sk-xxxx')
 self.vlm_model = os.getenv('VLM_MODEL', 'qwen3.5-397b-a17b')
 self.vlm_base_url = os.getenv('VLM_BASE_URL', 'https://dashscope.aliyuncs.com/compatible-mode/v1')
 ```
@@ -76,7 +76,7 @@ with open('table.jpg', 'rb') as f:
 
 # 调用Qwen VLM
 client = openai.OpenAI(
-    api_key='<your api key>',
+    api_key='sk-xxxx',
     base_url='https://dashscope.aliyuncs.com/compatible-mode/v1'
 )
 

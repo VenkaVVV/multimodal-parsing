@@ -7,3 +7,7 @@ model_cache
 logs
 *.pyc
 *.bak
+
+# 配置文件（包含敏感信息）
+config/local.yaml
+.env

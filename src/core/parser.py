@@ -51,7 +51,7 @@ class DocumentParser:
         
         Args:
             file_path: 文件路径
-            mode: 解析模式（traditional/vlm/selective/smart）
+            mode: 解析模式（traditional/vlm/smart）
             enable_chunking: 是否启用语义分片
             enable_snapshot: 是否生成快照
             
@@ -178,13 +178,6 @@ class DocumentParser:
             from ..handlers.excel_handler import ExcelHandler
             self._handlers["excel"] = ExcelHandler(self.config)
         return self._handlers["excel"]
-    
-    def _get_selective_vlm_handler(self):
-        """获取选择性VLM处理器（延迟加载）"""
-        if "selective_vlm" not in self._handlers:
-            from ..handlers.selective_vlm_handler import SelectiveVLMHandler
-            self._handlers["selective_vlm"] = SelectiveVLMHandler(self.config)
-        return self._handlers["selective_vlm"]
     
     def _get_smart_document_handler(self):
         """获取智能文档处理器（延迟加载）"""

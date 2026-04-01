@@ -86,7 +86,6 @@ async def parse_document(
     - **mode**: 解析模式
         - traditional: 传统模式（快速稳定）
         - vlm: VLM大模型模式（理解力强）
-        - selective: 选择性VLM模式（智能选择策略）
         - smart: 智能文档模式（完整版面分析+类型识别）⭐
     - **enable_chunking**: 是否启用语义分片
     - **enable_snapshot**: 是否生成文档快照

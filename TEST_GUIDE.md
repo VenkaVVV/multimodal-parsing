@@ -274,7 +274,7 @@ echo $VLM_API_KEY
 python3 << 'EOF'
 import openai
 client = openai.OpenAI(
-    api_key='<your api key>',
+    api_key='sk-xxxx',
     base_url='https://dashscope.aliyuncs.com/compatible-mode/v1'
 )
 print(client.models.list())

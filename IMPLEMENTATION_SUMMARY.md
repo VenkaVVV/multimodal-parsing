@@ -4,7 +4,7 @@
 
 已实现一个完整的智能文档解析系统，支持：
 - ✅ 多格式文档解析（PDF、Word、Excel、PPT、图片）
-- ✅ 四种解析模式（traditional、vlm、selective、smart）
+- ✅ 三种解析模式（traditional、vlm、smart）
 - ✅ MinerU深度集成（版面分析、OCR、表格识别）
 - ✅ VLM智能处理（表格还原、图片描述）
 - ✅ 结构化输出（Markdown + JSON）
@@ -17,7 +17,6 @@
 |------|------|---------|
 | traditional | 传统模式，PyMuPDF | 纯文本文档，快速处理 |
 | vlm | VLM模式，全部用VLM | 高质量要求，成本较高 |
-| selective | 选择性VLM，只对图片用VLM | 图文混排，平衡成本 |
 | **smart** | **智能模式，推荐使用** ⭐ | **所有场景** |
 
 ### 2. Smart模式详解
@@ -59,7 +58,7 @@
 
 **阿里云Qwen模型：**
 ```python
-API Key: <your api key>
+API Key: xxxx
 Model: qwen3.5-397b-a17b
 Base URL: https://dashscope.aliyuncs.com/compatible-mode/v1
 ```
@@ -306,7 +305,7 @@ print(result['markdown'])
 **环境变量：** `.env`
 
 ```bash
-VLM_API_KEY=<your api key>
+VLM_API_KEY=sk-xxxx
 VLM_MODEL=qwen3.5-397b-a17b
 VLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
 ```

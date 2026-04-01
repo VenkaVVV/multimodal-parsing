@@ -112,7 +112,7 @@ magic-pdf -p tests/data/待测试文档.pdf -o output/mineru_test -m ocr
 ```bash
 curl -X POST "http://localhost:8000/api/v1/parse" \
   -F "file=@sample.pdf" \
-  -F "mode=selective"
+  -F "mode=smart"
 ```
 
 虽然使用的是PyMuPDF，但功能正常，可以提取文本和图片。
