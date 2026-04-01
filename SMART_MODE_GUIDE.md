@@ -1,59 +1,76 @@
-# 智能文档解析模式使用指南
+# 智能型VLM模式使用指南
 
 ## 功能说明
 
-智能文档解析模式（smart）是一个完整的文档解析解决方案，它会：
-
-1. **版面分析**：使用MinerU检测文档中的不同区域类型
-2. **类型识别**：识别文字、图片、表格、公式等不同内容
-3. **智能处理**：根据内容类型选择最优解析策略
-4. **结构还原**：保留原文的层次结构和阅读顺序
+智能型VLM模式是一种智能解析策略，它会：
+1. **先进行版面分析**：检测文档中的不同区域类型
+2. **智能选择策略**：根据区域类型选择最优的解析方法
+3. **分别处理**：不同类型内容用不同工具处理
+4. **整合输出**：将所有结果整合为完整的Markdown
 
 ## 解析策略
 
-### 1. 文字内容
-- **策略**：直接提取文字
-- **工具**：MinerU OCR
-- **输出**：纯文本
+### 默认策略
 
-### 2. 图片内容
-- **策略A - 表格图片**：
-  - 使用VLM识别表格结构
-  - 还原为Markdown表格
-  - 保留数据完整性
+| 区域类型 | 解析方法 | 说明 |
+|---------|---------|------|
+| text（文本） | OCR | 快速提取文字 |
+| title（标题） | OCR | 提取标题文本 |
+| table（表格） | StructTable | 识别表格结构，输出HTML |
+| figure（图片） | **VLM** | 使用VLM生成描述和分析 |
+| formula（公式） | UniMERNet | 转换为LaTeX格式 |
+| caption（说明） | OCR | 提取说明文字 |
 
-- **策略B - 其他图片**：
-  - 使用VLM生成详细描述
-  - 分析图片内容（图表、示意图等）
-  - 附上图片链接
+### 核心优势
 
-### 3. 表格内容
-- **策略**：还原表格结构
-- **工具**：MinerU表格识别
-- **输出**：Markdown表格或HTML
+**图片处理（VLM）：**
+- ✅ 自动识别图片类型（照片/图表/示意图）
+- ✅ 生成详细的图片描述
+- ✅ 分析图表数据和趋势
+- ✅ 理解图片语义内容
 
-### 4. 公式内容
-- **策略**：转换为LaTeX
-- **工具**：MinerU公式识别
-- **输出**：LaTeX公式
+**文本处理（OCR）：**
+- ✅ 速度快（毫秒级）
+- ✅ 准确率高
+- ✅ 适合大量文本
+
+**表格处理（StructTable）：**
+- ✅ 保持表格结构
+- ✅ 处理合并单元格
+- ✅ 输出HTML格式
 
 ## 使用方法
 
-### 基本使用
+### 1. 基本使用
 
 ```bash
+# 使用智能型VLM模式
 curl -X POST "http://localhost:8000/api/v1/parse" \
-  -F "file=@document.pdf" \
+  -F "file=@sample.pdf" \
   -F "mode=smart"
 ```
 
-### Python代码
+### 2. 配置VLM API（可选）
+
+如果要使用外部VLM API（更强的理解能力）：
+
+```bash
+# 编辑.env文件
+echo "VLM_MODEL=deepseek-vl2" >> .env
+echo "DEEPSEEK_API_KEY=your_api_key" >> .env
+
+# 重启服务
+python start.py
+```
+
+### 3. Python代码使用
 
 ```python
 import requests
 
+# 使用智能型VLM模式
 url = "http://localhost:8000/api/v1/parse"
-files = {'file': open('document.pdf', 'rb')}
+files = {'file': open('sample.pdf', 'rb')}
 data = {'mode': 'smart'}
 
 response = requests.post(url, files=files, data=data)
@@ -61,236 +78,221 @@ result = response.json()
 
 if result['success']:
     print(result['markdown'])
+    
+    # 查看处理详情
+    print(f"处理区域数: {result['metadata']['regions_count']}")
 ```
 
-## 处理流程
+## 三种模式对比
 
+| 特性 | traditional | vlm | smart |
+|------|------------|-----|-----------|
+| 速度 | 快 | 慢 | 中等 |
+| 文本处理 | OCR | VLM | OCR |
+| 图片处理 | 保存图片 | VLM理解 | **VLM理解** |
+| 表格处理 | StructTable | VLM | StructTable |
+| 公式处理 | UniMERNet | VLM | UniMERNet |
+| 理解能力 | 中 | 高 | **高（图片）** |
+| 成本 | 低 | 高 | **中** |
+| 适用场景 | 普通文档 | 复杂文档 | **图文混排** |
+
+## 实际示例
+
+### 示例1：处理包含图表的文档
+
+```bash
+# 文档包含：文字 + 图表 + 表格
+curl -X POST "http://localhost:8000/api/v1/parse" \
+  -F "file=@report.pdf" \
+  -F "mode=smart" \
+  -o result.json
+
+# 结果：
+# - 文字部分：OCR快速提取
+# - 图表部分：VLM分析数据和趋势
+# - 表格部分：StructTable保持结构
 ```
-输入文档
-    ↓
-【步骤1】MinerU版面分析
-    ├─ 检测区域类型（文字/图片/表格/公式）
-    ├─ 确定阅读顺序
-    └─ 提取基础内容
-    ↓
-【步骤2】类型识别与分类
-    ├─ 文字区域 → 标记为text
-    ├─ 图片区域 → 判断是否为表格
-    ├─ 表格区域 → 标记为table
-    └─ 公式区域 → 标记为formula
-    ↓
-【步骤3】智能处理
-    ├─ 文字 → 直接提取
-    ├─ 表格图片 → VLM识别结构
-    ├─ 普通图片 → VLM生成描述
-    ├─ 表格 → 还原结构
-    └─ 公式 → 转LaTeX
-    ↓
-【步骤4】结构组装
-    ├─ 按阅读顺序排列
-    ├─ 保留层次结构
-    └─ 生成完整Markdown
-    ↓
-输出Markdown
-```
 
-## 输出示例
+### 示例2：处理学术论文
 
-### 输入：包含文字、图表、表格的文档
+```bash
+# 论文包含：文字 + 公式 + 图表
+curl -X POST "http://localhost:8000/api/v1/parse" \
+  -F "file=@paper.pdf" \
+  -F "mode=smart"
 
-**输出Markdown：**
-
-```markdown
-# 文档标题
-
-## 第一章
-
-这是一段文字内容，直接提取。
-
-### 1.1 数据分析
-
-![销售趋势图](images/chart_001.jpg)
-
-**图片描述：**
-这是一张折线图，展示了2024年1-12月的销售趋势：
-- 1月：120万
-- 2月：150万
-- ...
-- 12月：280万
-
-整体呈上升趋势，Q4达到全年最高。
-
-### 1.2 数据明细
-
-| 月份 | 销售额 | 增长率 |
-|------|--------|--------|
-| 1月  | 120万  | -      |
-| 2月  | 150万  | 25%    |
-| ...  | ...    | ...    |
-
-## 第二章
-
-更多内容...
+# 结果：
+# - 文字：OCR提取
+# - 公式：UniMERNet转LaTeX
+# - 图表：VLM生成描述
 ```
 
 ## 配置选项
 
+### 自定义解析策略
+
+编辑配置文件 `config/default.yaml`：
+
+```yaml
+smart_vlm:
+  # 文本处理策略
+  text: ocr          # 或 vlm
+  
+  # 表格处理策略
+  table: structtable # 或 vlm
+  
+  # 图片处理策略（推荐VLM）
+  figure: vlm        # 或 ocr
+  
+  # 公式处理策略
+  formula: unimernet # 或 vlm
+  
+  # 标题处理策略
+  title: ocr         # 或 vlm
+```
+
 ### VLM配置
 
-编辑`.env`文件：
-
-```bash
-# VLM配置（用于图片识别）
-VLM_MODEL=deepseek-vl2
-DEEPSEEK_API_KEY=your_api_key
+```yaml
+vlm:
+  model: deepseek-vl2
+  api_key: ${DEEPSEEK_API_KEY}
+  max_tokens: 4096
+  temperature: 0.7
 ```
 
-### MinerU配置
+## 处理流程详解
 
-编辑`~/magic-pdf.json`：
+### 完整流程
 
-```json
-{
-    "models-dir": "/Users/venka/.mineru/models",
-    "device": "cpu",
-    "layout-config": {
-        "model": "doclayout_yolo"
-    },
-    "table-config": {
-        "model": "rapid_table"
-    },
-    "formula-config": {
-        "enable": false
-    }
-}
+```
+输入文档（PDF/图片）
+    ↓
+【步骤1】版面分析（DocLayout-YOLO）
+    ├─ 检测到文本区域 × 10
+    ├─ 检测到图片区域 × 3
+    ├─ 检测到表格区域 × 2
+    └─ 检测到公式区域 × 5
+    ↓
+【步骤2】阅读顺序排序（XY-Cut++）
+    ↓
+【步骤3】分区域处理
+    ├─ 文本区域 → OCR → 纯文本
+    ├─ 图片区域 → VLM → 描述+分析
+    ├─ 表格区域 → StructTable → HTML
+    └─ 公式区域 → UniMERNet → LaTeX
+    ↓
+【步骤4】整合结果
+    └─ 拼接为完整Markdown
+    ↓
+输出Markdown
 ```
 
-## 四种模式对比
+### 图片处理示例
 
-| 特性 | traditional | vlm | smart |
-|------|------------|-----|-----------|-------|
-| 版面分析 | ❌ | ❌ | ✅ | ✅ |
-| 类型识别 | ❌ | ❌ | ✅ | ✅ |
-| 文字提取 | PyMuPDF | VLM | OCR | OCR |
-| 图片处理 | 保存 | VLM | VLM | VLM+描述 |
-| 表格还原 | ❌ | VLM | StructTable | StructTable |
-| 结构保留 | ❌ | ❌ | ⚠️ | ✅ |
-| 层次信息 | ❌ | ❌ | ❌ | ✅ |
-| 速度 | 快 | 慢 | 中 | 中 |
-| 质量 | 低 | 高 | 中 | **高** ⭐ |
+**输入：** 一张柱状图
 
-## 使用场景
+**VLM处理：**
+```
+这是一张柱状图，展示了2024年Q1-Q4的销售数据：
 
-### 推荐使用smart模式
+1. 图表类型：柱状图
+2. 数据内容：
+   - Q1: 120万
+   - Q2: 150万
+   - Q3: 180万
+   - Q4: 200万
+3. 趋势分析：销售额呈持续增长趋势，Q4达到全年最高值
+```
 
-✅ **学术论文**：包含文字、公式、图表
-✅ **数据报告**：包含文字、表格、图表
-✅ **技术文档**：包含文字、代码、示意图
-✅ **产品手册**：包含文字、图片、流程图
-✅ **财务报表**：包含文字、表格、图表
+**输出Markdown：**
+```markdown
+![销售数据图表](output/images/chart_001.png)
 
-### 不推荐使用
+这是一张柱状图，展示了2024年Q1-Q4的销售数据：
 
-❌ **纯文本文档**：用traditional更快
-❌ **批量处理**：用traditional效率更高
+1. 图表类型：柱状图
+2. 数据内容：
+   - Q1: 120万
+   - Q2: 150万
+   - Q3: 180万
+   - Q4: 200万
+3. 趋势分析：销售额呈持续增长趋势，Q4达到全年最高值
+```
 
 ## 性能参考
 
 | 文档类型 | 页数 | 处理时间 | 说明 |
 |---------|------|---------|------|
-| 纯文本 | 10页 | 30-40秒 | OCR处理 |
-| 图文混排 | 10页 | 40-60秒 | OCR+图片提取 |
-| 学术论文 | 10页 | 50-70秒 | OCR+公式 |
-| 数据报告 | 10页 | 60-90秒 | OCR+表格+VLM |
+| 纯文本文档 | 10页 | 3-5秒 | 主要用OCR |
+| 图文混排 | 10页 | 8-15秒 | 图片用VLM |
+| 学术论文 | 10页 | 10-20秒 | 公式+图表 |
+| 数据报告 | 10页 | 15-25秒 | 多图表+表格 |
 
 ## 常见问题
 
-### Q1: smart模式有什么特点？
+### Q1: 智能型VLM和全局VLM有什么区别？
 
 **A:**
-- **smart**：完整的版面分析，图片会判断是否为表格，保留层次结构
+- **全局VLM**：所有内容都用VLM处理，速度慢，成本高
+- **智能型VLM**：智能选择，文本用OCR（快），图片用VLM（准），性价比高
 
-### Q2: 需要配置VLM吗？
+### Q2: 图片一定会用VLM吗？
 
-**A:** 
-- 如果文档只有文字和表格：不需要
-- 如果文档有图片需要识别：需要配置VLM API
+**A:** 默认是的，但可以配置：
+```yaml
+smart_vlm:
+  figure: ocr  # 改为OCR，不使用VLM
+```
 
-### Q3: 如何知道使用了哪些处理方式？
+### Q3: 需要配置VLM API吗？
 
-**A:** 查看响应的metadata：
+**A:** 两种选择：
+1. **使用MinerU内置VLM**：免费，无需API Key
+2. **使用外部VLM API**：能力更强，需要API Key
 
+### Q4: 如何知道哪些区域用了VLM？
+
+**A:** 查看日志：
+```bash
+tail -f logs/app.log | grep "VLM"
+```
+
+或查看响应的metadata：
 ```json
 {
   "metadata": {
-    "parser": "SmartDocument",
-    "regions": {
-      "text": 10,
-      "image": 3,
-      "table": 2,
-      "formula": 5
-    }
+    "regions_count": 15,
+    "vlm_regions": 3,  // 使用VLM的区域数
+    "ocr_regions": 10  // 使用OCR的区域数
   }
 }
 ```
 
-### Q4: 输出的Markdown结构准确吗？
-
-**A:** 
-- smart模式会保留原文的层次结构
-- 标题层级、段落顺序都会保持
-- 表格和图片会插入到正确位置
-
 ## 最佳实践
 
-### 1. 选择合适的模式
+### 推荐使用场景
 
-```python
-# 纯文本 → traditional
-mode = "traditional"
+✅ **图文混排文档**：报告、论文、说明书
+✅ **包含图表的文档**：数据报告、分析报告
+✅ **需要图片理解**：产品手册、技术文档
 
-# 复杂文档 → smart
-mode = "smart"
+### 不推荐使用场景
 
-# 复杂文档 → smart
-mode = "smart"
-```
-
-### 2. 配置VLM提升图片识别质量
-
-```bash
-# 使用DeepSeek VLM
-VLM_MODEL=deepseek-vl2
-DEEPSEEK_API_KEY=sk-xxx
-
-# 或使用Qwen VLM
-VLM_MODEL=qwen2.5-vl
-QWEN_API_KEY=sk-xxx
-```
-
-### 3. 处理大型文档
-
-```python
-# 分批处理
-for page_range in [(0, 10), (10, 20), (20, 30)]:
-    result = parse_pdf(
-        file_path,
-        mode="smart",
-        start_page=page_range[0],
-        end_page=page_range[1]
-    )
-```
+❌ **纯文本文档**：用traditional模式更快
+❌ **批量处理**：用traditional模式效率更高
+❌ **无GPU环境**：VLM需要GPU加速
 
 ## 总结
 
-**smart模式 = 完整的文档解析解决方案**
+**智能型VLM模式 = 智能策略选择**
 
-- ✅ 版面分析：识别不同内容类型
-- ✅ 智能处理：根据类型选择策略
-- ✅ 结构保留：保持原文层次
-- ✅ 质量最优：MinerU + VLM
+- 文本 → OCR（快）
+- 图片 → VLM（准）
+- 表格 → StructTable（结构化）
+- 公式 → UniMERNet（LaTeX）
 
-**推荐作为默认解析模式！**
+**最佳性价比：既快速又准确！**
 
 使用方法：
 ```bash

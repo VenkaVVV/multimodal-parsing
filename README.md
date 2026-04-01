@@ -91,25 +91,17 @@ multimodal-parsing/
 ### VLM配置
 
 **阿里云Qwen模型：**
-- 从环境变量或.env文件读取
-- 配置优先级：环境变量 > .env文件 > 默认值
+- API Key: `sk-xxxx`
+- Model: `qwen3.5-397b-a17b`
+- Base URL: `https://dashscope.aliyuncs.com/compatible-mode/v1`
 
 **配置方式：**
 ```bash
-# 方式1：环境变量
-export VLM_API_KEY="your_api_key"
+# 环境变量
+export VLM_API_KEY="sk-xxxx"
 export VLM_MODEL="qwen3.5-397b-a17b"
 export VLM_BASE_URL="https://dashscope.aliyuncs.com/compatible-mode/v1"
-
-# 方式2：.env文件
-cp .env.example .env
-# 编辑.env文件，填入你的API Key
 ```
-
-**安全说明：**
-- ⚠️ .env文件已添加到.gitignore，不会被提交
-- ⚠️ 生产环境建议使用环境变量
-- ⚠️ 不要在代码中硬编码API Key
 
 ## 使用方法
 
@@ -210,23 +202,26 @@ print(result['metadata'])  # 元数据
 
 ## 开发日志
 
-### 2024-04-01 VLM配置安全处理
+### 2024-04-01 Smart模式重新实现
 
-**修改内容：**
-- 🔧 API Key从配置文件读取，不再硬编码
-- 🔧 添加.env配置文件支持
-- 🔧 添加.env.example示例文件
-- 🔧 更新.gitignore，防止敏感信息泄露
+**根据SMART_MODE_GUIDE.md要求重新实现：**
 
-**配置优先级：**
-1. 环境变量（最高）
-2. .env配置文件（中等）
-3. 默认值（最低，仅用于开发测试）
+**核心功能：**
+- ✅ 版面分析：统计各类型区域（text/table/figure/formula）
+- ✅ 智能策略：text→OCR, figure→VLM, table→StructTable
+- ✅ 图片处理：使用VLM生成详细描述
+- ✅ 统计信息：返回regions_count、vlm_regions、ocr_regions
 
-**安全说明：**
-- .env文件已添加到.gitignore
-- 生产环境建议使用环境变量
-- 不要在代码中硬编码API Key
+**处理流程：**
+1. MinerU版面分析（DocLayout-YOLO）
+2. 统计区域类型
+3. 对图片使用VLM生成描述
+4. 整合输出完整Markdown
+
+**VLM处理：**
+- 自动识别图片类型（图表/示意图/照片）
+- 生成详细描述和分析
+- 添加到Markdown中
 
 ### 2024-04-01 模式统一
 

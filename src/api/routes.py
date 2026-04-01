@@ -5,7 +5,7 @@ API路由
 import time
 import uuid
 from pathlib import Path
-from fastapi import FastAPI, UploadFile, File, Query, HTTPException, BackgroundTasks
+from fastapi import FastAPI, UploadFile, File, Form, Query, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from loguru import logger
@@ -75,9 +75,9 @@ async def health_check():
 @app.post("/api/v1/parse", response_model=ParseResponse)
 async def parse_document(
     file: UploadFile = File(..., description="上传的文档文件"),
-    mode: str = Query("traditional", regex="^(traditional|vlm|smart)$", description="解析模式"),
-    enable_chunking: bool = Query(False, description="是否启用语义分片"),
-    enable_snapshot: bool = Query(True, description="是否生成快照")
+    mode: str = Form("traditional", description="解析模式"),
+    enable_chunking: bool = Form(False, description="是否启用语义分片"),
+    enable_snapshot: bool = Form(True, description="是否生成快照")
 ):
     """
     解析文档
