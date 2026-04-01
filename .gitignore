@@ -1,0 +1,9 @@
+output
+tests
+uploads
+方案设计图
+方案讨论.md
+model_cache
+logs
+*.pyc
+*.bak

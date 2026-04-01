@@ -1,0 +1,116 @@
+# 选择性VLM配置示例
+
+# 解析策略配置
+selective_vlm:
+  # 文本区域处理策略
+  # - ocr: 使用PaddleOCR快速提取（推荐）
+  # - vlm: 使用VLM理解语义
+  text: ocr
+  
+  # 标题区域处理策略
+  # - ocr: 快速提取标题文本（推荐）
+  # - vlm: 使用VLM理解标题语义
+  title: ocr
+  
+  # 图片区域处理策略
+  # - vlm: 使用VLM生成描述和分析（推荐）⭐
+  # - ocr: 仅提取图片中的文字
+  figure: vlm
+  
+  # 表格区域处理策略
+  # - structtable: 使用StructTable识别结构（推荐）
+  # - vlm: 使用VLM理解表格内容
+  table: structtable
+  
+  # 公式区域处理策略
+  # - unimernet: 使用UniMERNet转LaTeX（推荐）
+  # - vlm: 使用VLM理解公式
+  formula: unimernet
+  
+  # 说明文字处理策略
+  caption: ocr
+  
+  # 页眉页脚处理策略
+  header: ocr
+  footer: ocr
+
+# VLM配置
+vlm:
+  # VLM模型选择
+  # - deepseek-vl2: DeepSeek VL2（推荐）
+  # - qwen2.5-vl: Qwen2.5-VL
+  # - gpt-4-vision: GPT-4 Vision
+  model: deepseek-vl2
+  
+  # API Key（从环境变量读取）
+  # 如果不配置，将使用MinerU内置VLM（免费）
+  api_key: ${DEEPSEEK_API_KEY}
+  
+  # 最大token数
+  max_tokens: 4096
+  
+  # 温度参数（0-1，越高越随机）
+  temperature: 0.7
+  
+  # 是否启用GPU
+  use_gpu: true
+
+# 版面检测配置
+layout_detection:
+  # 模型选择
+  # - doclayout_yolo: DocLayout-YOLO（推荐）
+  # - mineru: 使用MinerU内置检测
+  model: doclayout_yolo
+  
+  # 置信度阈值（0-1）
+  confidence_threshold: 0.2
+  
+  # 图片尺寸
+  image_size: 1024
+
+# 阅读顺序配置
+reading_order:
+  # 算法选择
+  # - xy_cut: XY-Cut算法（推荐）
+  # - simple: 简单排序
+  algorithm: xy_cut
+
+# OCR配置
+ocr:
+  # 引擎选择
+  # - paddleocr: PaddleOCR（推荐）
+  # - tesseract: Tesseract
+  engine: paddleocr
+  
+  # 是否使用角度分类
+  use_angle_cls: true
+  
+  # 语言
+  lang: ch
+  
+  # 是否使用GPU
+  use_gpu: true
+
+# 表格识别配置
+table_recognition:
+  # 引擎选择
+  # - structtable: StructTable（推荐）
+  # - vlm: VLM
+  engine: structtable
+  
+  # 输出格式
+  # - html: HTML格式（推荐）
+  # - markdown: Markdown格式
+  output_format: html
+
+# 公式识别配置
+formula_recognition:
+  # 引擎选择
+  # - unimernet: UniMERNet（推荐）
+  # - vlm: VLM
+  engine: unimernet
+  
+  # 输出格式
+  # - latex: LaTeX格式（推荐）
+  # - mathml: MathML格式
+  output_format: latex

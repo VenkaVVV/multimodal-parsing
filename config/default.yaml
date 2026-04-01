@@ -1,0 +1,58 @@
+# 默认配置文件
+
+app:
+  name: multimodal-parsing
+  version: 0.1.0
+  debug: false
+
+parser:
+  mode: traditional  # traditional | vlm
+  max_file_size: 104857600  # 100MB
+  supported_formats:
+    - pdf
+    - docx
+    - doc
+    - ppt
+    - pptx
+    - xls
+    - xlsx
+    - png
+    - jpg
+    - jpeg
+    - bmp
+
+mineru:
+  device: cuda:0
+  models_dir: models/
+  output_dir: output/
+  ocr:
+    lang: ch
+    use_gpu: true
+
+libreoffice:
+  # macOS路径
+  path: /Applications/LibreOffice.app/Contents/MacOS/soffice
+  # Linux路径
+  # path: /usr/bin/libreoffice
+  timeout: 60
+
+chunking:
+  enabled: false
+  chunk_size: 512
+  overlap: 64
+
+snapshot:
+  enabled: true
+  dpi: 150
+
+api:
+  host: 0.0.0.0
+  port: 8000
+  workers: 2
+  cors_origins:
+    - "*"
+
+logging:
+  level: INFO
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: logs/app.log
