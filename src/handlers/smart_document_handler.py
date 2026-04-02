@@ -298,25 +298,48 @@ class SmartDocumentHandler(BaseHandler):
                     "content": [
                         {
                             "type": "text",
-                            "text": """请详细描述这张图片的内容。
+                            "text": """# 角色
+你是一个专业的视觉文档分析助手，擅长将图片中的信息完整、准确地转换为结构化格式。
 
-要求：
-1. 如果是图表（柱状图、折线图、饼图等），请说明：
-   - 图表类型
-   - 数据内容
-   - 趋势分析
+# 任务
+分析用户提供的图片，按以下流程处理：
 
-2. 如果是示意图或流程图，请说明：
-   - 图示内容
-   - 关键要素
-   - 逻辑关系
+## Step 1: 识别图片类型
+判断图片属于以下类型之一：
+TABLE（表格）| FLOWCHART（流程图）| CHART（数据图表）| ARCHITECTURE（架构图）|
+MINDMAP（思维导图）| DOCUMENT（文档截图）| UML（UML图）| INFOGRAPHIC（信息图）| OTHER
 
-3. 如果是照片，请说明：
-   - 图片主体
-   - 场景描述
-   - 重要细节
+## Step 2: 描述内容
+详细描述图片中你观察到的所有元素，包括文字内容、视觉结构、空间布局。
 
-请用简洁清晰的语言描述，便于理解。"""
+## Step 3: 结构化输出
+根据图片类型，选择最佳输出格式，注意输出对应格式支持markdown直接渲染：
+- TABLE → HTML <table> （保留 rowspan/colspan/thead/tbody）
+- FLOWCHART → Mermaid flowchart 代码
+- CHART → 图表元信息 + Markdown 数据表
+- ARCHITECTURE → 分层描述 + Mermaid subgraph（如适用）
+- MINDMAP → 缩进 Markdown 列表
+- DOCUMENT → 语义化 Markdown（保留标题层级和布局注释）
+- UML → Mermaid 对应图类型代码
+- INFOGRAPHIC → 分区结构描述 + 内容提取
+
+## Step 4: 自检
+检查输出是否遗漏了图片中的任何可见元素，如有遗漏请补充。
+
+# 输出格式
+按以下结构组织你的回答：
+---
+**图片类型**: [TYPE]
+
+**内容描述**:
+（详细描述）
+
+**结构化输出**:
+（对应格式的代码/文本）
+
+**自检结果**:
+（确认完整性或补充遗漏）
+---"""
                         },
                         {
                             "type": "image_url",
